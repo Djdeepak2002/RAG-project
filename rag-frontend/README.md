@@ -1,16 +1,39 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# RAG Frontend
 
-Currently, two official plugins are available:
+A React-based frontend for the RAG news chatbot. Connects to the backend to provide a conversational interface for news Q&A.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Chat UI**: Modern, responsive chat window for interacting with the news bot.
+- **Session Persistence**: Remembers user session and chat history.
+- **Markdown Rendering**: Bot replies support markdown formatting.
+- **Clear History**: Button to reset chat and start a new session.
+- **Loading States**: Shows typing indicator while waiting for bot response.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Installation
 
-## Expanding the ESLint configuration
+1. **Install dependencies**  
+	```
+	cd rag-frontend
+	npm install
+	```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. **Start the development server**  
+	```
+	npm run dev
+	```
+	The app runs at `http://localhost:5173` (default Vite port).
+
+3. **Configure backend URL**  
+	Ensure `API_URL` in `src/App.jsx` matches your backend (default: `http://localhost:3000/api`).
+
+## Main Functionalities
+
+- **Send Message**: User types a question, which is sent to `/api/chat` on the backend.
+- **Display History**: Loads previous messages from `/api/session/:sessionId`.
+- **Clear Session**: Calls `DELETE /api/session/:sessionId` to reset chat.
+
+## Technologies
+
+- React, Vite, Axios, React Markdown, UUID

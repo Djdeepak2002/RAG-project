@@ -1,117 +1,168 @@
-# 📰 News RAG Chatbot - Backend API
+# 📰 News RAG Chatbot -- Backend API
 
-This is the backend service for the News RAG Chatbot. It provides a RESTful API to ingest news articles, generate vector embeddings, manage chat sessions, and generate AI responses using Google Gemini.
+A production-ready backend service for a **Retrieval-Augmented
+Generation (RAG) News Chatbot**, built using Node.js, Qdrant, Redis,
+Jina Embeddings, and Google Gemini. It ingests real-time news, stores
+semantic vectors, retrieves context, and generates grounded AI
+responses.
 
-## 🛠️ Tech Stack
+## ⭐ Overview
 
-* **Runtime:** Node.js (Express.js)
-* **LLM:** Google Gemini (via `google-generative-ai`)
-* **Embeddings:** Jina Embeddings v2
-* **Vector Database:** Qdrant (Dockerized)
-* **Session Caching:** Redis (Dockerized)
-* **Data Source:** RSS Feeds (via `rss-parser`)
+This backend handles:
 
-## 🚀 Features
-
-* **RAG Pipeline:** Ingests news articles, chunks text, and stores vectors in Qdrant.
-* **Context-Aware Chat:** Retrieves top-k relevant articles to ground the LLM's response.
-* **Session Management:** Uses Redis to store chat history per session ID.
-* **Automatic Expiry:** Redis keys are set with a TTL (Time-To-Live) of 24 hours to manage memory efficiency.
-
-## ⚙️ Setup & Installation
-
-### 1. Prerequisites
-Ensure you have **Docker** and **Node.js** installed.
-
-### 2. Start Services
-Run the Vector Database and Redis using Docker:
-```bash
-# Start Qdrant
-docker run -d -p 6333:6333 -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
-
-# Start Redis
-docker run -d -p 6379:6379 redis
-
-Here are the two separate professional README.md files. These are written to satisfy the "Code Quality" and "Code Walkthrough" sections of your assignment .
-
-
-1. Backend README
-Save this file inside your rag-backend folder as README.md.
-
-Markdown
-
-# 📰 News RAG Chatbot - Backend API
-
-This is the backend service for the News RAG Chatbot. It provides a RESTful API to ingest news articles, generate vector embeddings, manage chat sessions, and generate AI responses using Google Gemini.
+-   Fetching and chunking news articles from RSS feeds\
+-   Generating embedding vectors using **Jina Embeddings v2**\
+-   Storing and searching vectors in **Qdrant**\
+-   Maintaining chat sessions using **Redis**\
+-   Generating context-aware responses using **Google Gemini**\
+-   Exposing REST APIs for chat interactions and session management
 
 ## 🛠️ Tech Stack
 
-* **Runtime:** Node.js (Express.js)
-* **LLM:** Google Gemini (via `google-generative-ai`)
-* **Embeddings:** Jina Embeddings v2
-* **Vector Database:** Qdrant (Dockerized)
-* **Session Caching:** Redis (Dockerized)
-* **Data Source:** RSS Feeds (via `rss-parser`)
+  Component          Technology
+  ------------------ ------------------------
+  Runtime            Node.js (Express.js)
+  LLM                Google Gemini
+  Embeddings         Jina Embeddings v2
+  Vector Database    Qdrant (Docker)
+  Cache / Sessions   Redis (Docker)
+  Data Source        RSS Feeds (TechCrunch)
 
 ## 🚀 Features
 
-* **RAG Pipeline:** Ingests news articles, chunks text, and stores vectors in Qdrant.
-* **Context-Aware Chat:** Retrieves top-k relevant articles to ground the LLM's response.
-* **Session Management:** Uses Redis to store chat history per session ID.
-* **Automatic Expiry:** Redis keys are set with a TTL (Time-To-Live) of 24 hours to manage memory efficiency.
+### 🔹 RAG Pipeline
 
-## ⚙️ Setup & Installation
+-   Fetches news from RSS\
+-   Chunks content\
+-   Generates embeddings\
+-   Stores semantic vectors in Qdrant
 
-### 1. Prerequisites
-Ensure you have **Docker** and **Node.js** installed.
+### 🔹 Context-Aware Chat
 
-### 2. Start Services
-Run the Vector Database and Redis using Docker:
-```bash
-# Start Qdrant
-docker run -d -p 6333:6333 -v $(pwd)/qdrant_storage:/qdrant/storage qdrant/qdrant
+-   Retrieves top-k relevant articles\
+-   Sends grounded context to Gemini\
+-   Produces fact-based answers
 
-# Start Redis
+### 🔹 Session Management
+
+-   Chat history stored per session in Redis\
+-   TTL: **24 hours**\
+-   Automatic cleanup of inactive sessions
+
+## 📂 Project Structure
+
+    rag-backend/
+    │── ingest.js
+    │── server.js
+    │── utils/
+    │     └── jina.js
+    │── services/
+    │     ├── qdrant.js
+    │     └── redis.js
+    │── routes/
+    │     └── chat.js
+    │── .env
+    │── package.json
+    └── README.md
+
+## ⚙️ Installation & Setup
+
+### 1️⃣ Prerequisites
+
+-   Node.js v18+\
+-   Docker installed
+
+### 2️⃣ Start Required Services
+
+#### Start Qdrant
+
+``` bash
+docker run -d -p 6333:6333   -v $(pwd)/qdrant_storage:/qdrant/storage   qdrant/qdrant
+```
+
+#### Start Redis
+
+``` bash
 docker run -d -p 6379:6379 redis
-3. Install Dependencies
-Bash
+```
 
+### 3️⃣ Install Dependencies
+
+``` bash
 npm install
-4. Environment Variables
-Create a .env file in the root directory:
+```
 
-Code snippet
+### 4️⃣ Environment Variables
 
-JINA_API_KEY=your_jina_key
-GEMINI_API_KEY=your_gemini_key
-5. Ingest Data
-Run the ingestion script to fetch news and populate the Vector DB:
+Create a `.env` file:
 
-Bash
+    JINA_API_KEY=your_jina_api_key
+    GEMINI_API_KEY=your_gemini_api_key
 
+### 5️⃣ Ingest News Articles
+
+``` bash
 node ingest.js
-Expected Output: "✅ Ingestion complete! Articles indexed."
+```
 
-6. Run Server
-Bash
+Expected output:
 
+    ✅ Ingestion complete! Articles indexed.
+
+### 6️⃣ Start the Server
+
+``` bash
 node server.js
-The API will be available at http://localhost:3000.
+```
 
-🧠 Design Decisions
-Why Qdrant?
-I chose Qdrant because it is a lightweight, open-source vector database that is easy to run locally via Docker. It supports high-performance vector similarity search (Cosine distance), which is essential for accurate RAG retrieval.
+Server runs at:\
+**http://localhost:3000**
 
-Caching Strategy (Redis)
-To ensure low latency and user context continuity, I used Redis for session storage.
+## 📡 API Endpoints
 
-Structure: Chat history is stored as a List (lpush/lrange) keyed by session:{uuid}.
+### **POST /api/chat**
 
-TTL Configuration: A TTL of 86400 seconds (24 hours) is applied to every session key. This serves as a passive "cache warming" strategy where active sessions stay hot, while inactive ones are automatically purged to save memory.
+Request:
 
-📡 API Endpoints
-POST /api/chat: Accepts { sessionId, message }. Returns AI response.
+``` json
+{
+  "sessionId": "uuid",
+  "message": "What’s the latest in AI?"
+}
+```
 
-GET /api/session/:id: Returns chat history.
+Response:
 
-DELETE /api/session/:id: Clears session history.
+``` json
+{
+  "reply": "Here is the latest update..."
+}
+```
+
+### **GET /api/session/:sessionId**
+
+Retrieve chat history.
+
+### **DELETE /api/session/:sessionId**
+
+Clear chat history.
+
+## 🧠 Design Decisions
+
+### ✔ Qdrant for Vector Search
+
+Fast cosine similarity search with easy Docker deployment.
+
+### ✔ Redis for Session Storage
+
+Low latency, per-session history, 24-hour TTL for auto-cleanup.
+
+### ✔ Jina Embeddings v2
+
+Accurate embeddings with simple API integration.
+
+## 📝 Summary
+
+This backend provides a clean, modular, and scalable RAG system using
+modern AI tools. It supports semantic search, grounded chat responses,
+and efficient session handling.
