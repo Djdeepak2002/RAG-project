@@ -210,9 +210,3 @@ We welcome contributions! Please follow these guidelines:
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
-
-## Contact Information
-For support or inquiries, please contact:
-- **Project Maintainer:** [Your Name]
-- **Email:** your.email@example.com
-- **GitHub Issues:** [Open an issue](https://github.com/yourusername/rag-project/issues)
