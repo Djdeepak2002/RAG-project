@@ -77,6 +77,16 @@ rag-frontend/
 
 ---
 
+
+## 🏗️ RAG Architecture Diagram
+
+![RAG Backend Architecture](/Advanced-RAG.png)
+
+
+## 🏗️ Demo Screenshot
+![Demo Screenshot](./rag-chatbot-demo.JPG)
+
+
 ## Installation
 
 ### Prerequisites
@@ -134,6 +144,12 @@ rag-frontend/
    Ensure `API_URL` in `src/App.jsx` matches your backend (default: `http://localhost:3000/api`).
 
 ---
+
+
+
+## 🏗️ Demo Screenshot
+![Demo Screenshot](./rag-chatbot-demo.JPG)
+
 
 ## Usage
 

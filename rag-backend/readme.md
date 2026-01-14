@@ -2,7 +2,7 @@
 # 📰 News RAG Chatbot -- Backend API
 
 
-## 🏗️ Architecture Diagram
+## 🏗️ RAG Architecture Diagram
 
 ![RAG Backend Architecture](../Advanced-RAG.png)
 
