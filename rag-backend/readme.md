@@ -26,7 +26,7 @@ This backend handles:
   Embeddings         Jina Embeddings v2
   Vector Database    Qdrant (Docker)
   Cache / Sessions   Redis (Docker)
-  Data Source        RSS Feeds (TechCrunch)
+  Data Source        RSS Feeds (TechCrunch, BBC, Guardian, Al Jazeera)
 
 ## 🚀 Features
 
@@ -52,15 +52,9 @@ This backend handles:
 ## 📂 Project Structure
 
     rag-backend/
-    │── ingest.js
-    │── server.js
-    │── utils/
-    │     └── jina.js
-    │── services/
-    │     ├── qdrant.js
-    │     └── redis.js
-    │── routes/
-    │     └── chat.js
+    │── ingest.js         # News ingestion and vectorization
+    │── server.js         # Main Express API server
+    │── query.js          # Standalone query/test script
     │── .env
     │── package.json
     └── README.md
@@ -96,35 +90,39 @@ npm install
 
 Create a `.env` file:
 
-    JINA_API_KEY=your_jina_api_key
-    GEMINI_API_KEY=your_gemini_api_key
+  JINA_API_KEY=your_jina_api_key
+  GEMINI_API_KEY=your_gemini_api_key
 
 ### 5️⃣ Ingest News Articles
 
-``` bash
+```bash
 node ingest.js
 ```
 
+This will fetch and chunk news from multiple RSS feeds (TechCrunch, BBC, Guardian, Al Jazeera), generate embeddings for each chunk, and store them in Qdrant. Each article is split into overlapping chunks for better retrieval.
+
 Expected output:
 
-    ✅ Ingestion complete! Articles indexed.
+  ✅ Ingestion complete! Articles indexed.
 
 ### 6️⃣ Start the Server
 
-``` bash
+```bash
 node server.js
 ```
 
-Server runs at:\
+Server runs at:
 **http://localhost:3000**
 
 ## 📡 API Endpoints
 
 ### **POST /api/chat**
 
+Send a user message and session ID. The backend retrieves relevant news chunks, builds a context, and generates a Gemini-based answer. Chat history is stored in Redis (last 10 messages for context).
+
 Request:
 
-``` json
+```json
 {
   "sessionId": "uuid",
   "message": "What’s the latest in AI?"
@@ -133,7 +131,7 @@ Request:
 
 Response:
 
-``` json
+```json
 {
   "reply": "Here is the latest update..."
 }
@@ -141,28 +139,34 @@ Response:
 
 ### **GET /api/session/:sessionId**
 
-Retrieve chat history.
+Retrieve chat history for a session (returns all messages, most recent first).
 
 ### **DELETE /api/session/:sessionId**
 
-Clear chat history.
+Clear chat history for a session.
 
-## 🧠 Design Decisions
+## 🧠 Design Decisions & Improvements
 
-### ✔ Qdrant for Vector Search
+- **Multi-source news ingestion**: Now fetches from TechCrunch, BBC, Guardian, Al Jazeera.
+- **Chunked context**: Articles are split into overlapping chunks for better semantic search.
+- **Improved context retrieval**: Top 5 relevant chunks are retrieved and used for Gemini prompts.
+- **Session management**: Last 10 messages are used for context, stored in Redis with 24h TTL.
+- **Error handling**: Graceful fallback if no relevant news is found.
+- **Standalone query.js**: For testing queries and context retrieval without running the server.
 
-Fast cosine similarity search with easy Docker deployment.
+## 📦 Dependencies
 
-### ✔ Redis for Session Storage
+Key NPM packages:
 
-Low latency, per-session history, 24-hour TTL for auto-cleanup.
+- express, cors, dotenv, axios
+- @qdrant/js-client-rest
+- @google/generative-ai
+- ioredis
+- rss-parser
+- uuid
 
-### ✔ Jina Embeddings v2
-
-Accurate embeddings with simple API integration.
+See package.json for full list.
 
 ## 📝 Summary
 
-This backend provides a clean, modular, and scalable RAG system using
-modern AI tools. It supports semantic search, grounded chat responses,
-and efficient session handling.
+This backend provides a clean, modular, and scalable RAG system using modern AI tools. It supports multi-source news ingestion, chunked semantic search, grounded chat responses, and efficient session handling.
