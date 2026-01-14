@@ -83,8 +83,6 @@ rag-frontend/
 ![RAG Backend Architecture](/Advanced-RAG.png)
 
 
-## 🏗️ Demo Screenshot
-![Demo Screenshot](./rag-chatbot-demo.JPG)
 
 
 ## Installation
