@@ -1,4 +1,5 @@
 /* src/styles.scss */
+@use "sass:color";
 $primary-color: #007bff;
 $bg-color: #f4f4f9;
 $chat-bg: #ffffff;
@@ -102,15 +103,25 @@ body {
     &:focus { outline: 2px solid $primary-color; border-color: transparent; }
   }
 
-  button {
-    padding: 0 24px;
-    background: $primary-color;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    &:disabled { background: #ccc; cursor: not-allowed; }
-    &:hover:not(:disabled) { background: darken($primary-color, 10%); }
+  
+button {
+  padding: 0 24px;
+  background: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+
+  &:disabled { 
+    background: #ccc; 
+    cursor: not-allowed; 
   }
+
+  &:hover:not(:disabled) { 
+    background: color.adjust($primary-color, $lightness: -10%);
+  }
+}
+
+
 }
