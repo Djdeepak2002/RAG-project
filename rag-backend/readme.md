@@ -1,4 +1,15 @@
+
 # 📰 News RAG Chatbot -- Backend API
+
+
+## 🏗️ Architecture Diagram
+
+![RAG Backend Architecture](../Advanced-RAG.png)
+
+**Flow:**
+- News is fetched and chunked by `ingest.js` from multiple RSS feeds.
+- Chunks are embedded via Jina and stored in Qdrant.
+- User queries hit the Express API, which retrieves context from Qdrant, manages chat history in Redis, and generates answers using Gemini.
 
 A production-ready backend service for a **Retrieval-Augmented
 Generation (RAG) News Chatbot**, built using Node.js, Qdrant, Redis,
@@ -58,6 +69,9 @@ This backend handles:
     │── .env
     │── package.json
     └── README.md
+
+## 🏗️ Demo Screenshot
+![Demo Screenshot](../rag-chatbot-demo.JPG)
 
 ## ⚙️ Installation & Setup
 
