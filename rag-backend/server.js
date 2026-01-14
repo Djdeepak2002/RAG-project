@@ -21,27 +21,37 @@ const COLLECTION_NAME = 'news_articles';
 const qdrant = new QdrantClient({ host: 'localhost', port: 6333 });
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 // Redis Setup: connect to default local instance
-const redis = new Redis(); 
+const redis = new Redis();
 
 // --- Helper Functions (From your scripts) ---
 
 async function getQueryEmbedding(text) {
     try {
+        const cacheKey = `embed:${text}`;
+
+        const cached = await redis.get(cacheKey);
+        if (cached) return JSON.parse(cached);
+
         const url = 'https://api.jina.ai/v1/embeddings';
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${JINA_API_KEY}`
         };
+
         const response = await axios.post(url, {
             model: 'jina-embeddings-v2-base-en',
             input: [text]
         }, { headers });
-        return response.data.data[0].embedding;
+
+        const embedding = response.data.data[0].embedding;
+        await redis.set(cacheKey, JSON.stringify(embedding), "EX", 86400);
+        return embedding;
     } catch (e) {
         console.error("Embedding Error:", e.message);
         throw new Error("Failed to generate embedding");
     }
 }
+
 
 // --- API Endpoints ---
 
@@ -49,7 +59,7 @@ async function getQueryEmbedding(text) {
 app.post('/api/chat', async (req, res) => {
     try {
         const { message, sessionId } = req.body;
-        
+
         if (!message || !sessionId) {
             return res.status(400).json({ error: "Message and sessionId are required" });
         }
@@ -60,10 +70,25 @@ app.post('/api/chat', async (req, res) => {
         const queryVector = await getQueryEmbedding(message);
         const searchResults = await qdrant.search(COLLECTION_NAME, {
             vector: queryVector,
-            limit: 3
+            limit: 5,
+            filter: {
+                must: [
+                    {
+                        key: "category",
+                        match: { any: ["technology", "business", "world"] }
+                    }
+                ]
+            }
         });
 
-        const context = searchResults.map(r => 
+        if (!searchResults.length) {
+            console.log("🤖 Bot Answer:\n I don't have enough information from the news feed.");
+            return res.json({
+                reply: "I don't have enough information from the news feed."
+            });
+        }
+
+        const context = searchResults.map(r =>
             `Title: ${r.payload.title}\nContent: ${r.payload.content}`
         ).join("\n\n");
 
@@ -76,7 +101,7 @@ app.post('/api/chat', async (req, res) => {
         // C. Build Gemini Prompt
         // We include history in the prompt so the bot "remembers"
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        
+
         const chat = model.startChat({
             history: history.map(h => ({
                 role: h.sender === 'user' ? 'user' : 'model',
@@ -85,13 +110,20 @@ app.post('/api/chat', async (req, res) => {
         });
 
         const prompt = `
-        You are a helpful news assistant. Answer based ONLY on the context provided below.
-        
-        CONTEXT:
-        ${context}
-        
-        USER QUESTION: ${message}
-        `;
+SYSTEM:
+You are a retrieval-based assistant.
+You MUST NOT use outside knowledge.
+If context is insufficient, reply exactly:
+"I don't have enough information from the news feed."
+
+CONTEXT:
+${context}
+
+QUESTION:
+${message}
+`;
+
+
 
         const result = await chat.sendMessage(prompt);
         const botReply = result.response.text();
@@ -101,7 +133,7 @@ app.post('/api/chat', async (req, res) => {
         await redis.lpush(historyKey, JSON.stringify({ sender: 'user', text: message }));
         // Store Bot Msg
         await redis.lpush(historyKey, JSON.stringify({ sender: 'bot', text: botReply }));
-        
+
         // Set TTL (Time to Live) for 24 hours (86400 seconds)
         await redis.expire(historyKey, 86400);
 
@@ -117,11 +149,11 @@ app.post('/api/chat', async (req, res) => {
 app.get('/api/session/:sessionId', async (req, res) => {
     const { sessionId } = req.params;
     const historyKey = `session:${sessionId}`;
-    
+
     // Get all messages
     const rawHistory = await redis.lrange(historyKey, 0, -1);
     const history = rawHistory.map(item => JSON.parse(item)).reverse();
-    
+
     res.json(history);
 });
 
@@ -130,6 +162,10 @@ app.delete('/api/session/:sessionId', async (req, res) => {
     const { sessionId } = req.params;
     await redis.del(`session:${sessionId}`);
     res.json({ message: "Session cleared" });
+});
+
+app.get('/', async (req, res) => {
+    res.json({ message: `🚀 Server running Succesfully` }).status(200);
 });
 
 // Start Server

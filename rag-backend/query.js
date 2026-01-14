@@ -35,11 +35,19 @@ async function askBot(userQuery) {
     // B. Search Qdrant for top 3 relevant articles 
     const searchResults = await qdrant.search(COLLECTION_NAME, {
         vector: queryVector,
-        limit: 3
+        limit: 3,
+        score_threshold: 0.75
     });
 
+    if (!searchResults.length) {
+    searchResults = await qdrant.search(COLLECTION_NAME, {
+        vector: queryVector,
+        limit: 5
+    });
+}
+
     // C. Construct Context
-    const context = searchResults.map(res => 
+    const context = searchResults.map(res =>
         `Title: ${res.payload.title}\nContent: ${res.payload.content}`
     ).join("\n\n");
 
